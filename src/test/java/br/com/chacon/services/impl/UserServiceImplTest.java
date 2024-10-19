@@ -12,6 +12,7 @@ import org.mockito.MockitoAnnotations;
 import org.modelmapper.ModelMapper;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.hibernate.validator.internal.util.Contracts.assertNotNull;
@@ -26,6 +27,7 @@ class UserServiceImplTest {
     public static final String NAME     = "Vitoria";
     public static final String EMAIL    = "vitoria@mail.com";
     public static final String PASSWORD = "1234";
+    public static final String OBJETO_NÃO_ENCONTRADO = "Objeto não encontrado";
 
     @InjectMocks /*A anotação @InjectMocks do Mockito é utilizada para criar e injetar mocks automaticamente no
     objeto que está sendo testado. Quando você anota uma classe com @InjectMocks, o Mockito cria uma instância dessa
@@ -65,18 +67,29 @@ class UserServiceImplTest {
 
     @Test
     void whenFindByIdThenReturnAnObjectNotFoundException(){
-        when(repository.findById(anyInt())).thenThrow(new ObjectNotFoundException("Objeto não encontrado"));
+        when(repository.findById(anyInt())).thenThrow(new ObjectNotFoundException(OBJETO_NÃO_ENCONTRADO));
 
         try{
             service.findById(ID);
         } catch (Exception ex){
             assertEquals(ObjectNotFoundException.class, ex.getClass());
-            assertEquals("Objeto não encontrado", ex.getMessage());
+            assertEquals(OBJETO_NÃO_ENCONTRADO, ex.getMessage());
         }
     }
 
     @Test
-    void findAll() {
+    void whenFindAllThenReturnAnListOfUsers() {
+        when(repository.findAll()).thenReturn(List.of(user));
+
+        List<User> response = service.findAll();
+
+        assertNotNull(response);
+        assertEquals(1, response.size());
+        assertEquals(User.class, response.get(0).getClass());
+        assertEquals(ID, response.get(0).getId());
+        assertEquals(NAME, response.get(0).getName());
+        assertEquals(EMAIL, response.get(0).getEmail());
+        assertEquals(PASSWORD, response.get(0).getPassword());
     }
 
     @Test
